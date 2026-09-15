@@ -78,5 +78,13 @@
     "category": "Classiques",
     "image": "games/snake/cover.svg",
     "href": "games/snake/index.html"
+  },
+  {
+    "slug": "subwaysurfer",
+    "title": "Subwaysurfer",
+    "description": "",
+    "category": null,
+    "image": "games/subwaysurfer/game.png",
+    "href": "games/subwaysurfer/index.html"
   }
 ]
