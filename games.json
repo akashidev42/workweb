@@ -1,90 +1,74 @@
 [
   {
-    "slug": "2048",
-    "title": "2048",
-    "description": "Fusionne les tuiles jusqu'à atteindre 2048.",
-    "category": "Réflexion",
-    "image": "games/2048/cover.svg",
-    "href": "games/2048/index.html"
-  },
-  {
-    "slug": "casse-briques",
-    "title": "Casse-briques",
-    "description": "Détruis toutes les briques sans laisser tomber la balle.",
-    "category": "Classiques",
-    "image": "games/casse-briques/cover.svg",
-    "href": "games/casse-briques/index.html"
-  },
-  {
-    "slug": "chute-de-blocs",
-    "title": "Chute de Blocs",
-    "description": "Empile les blocs et complète des lignes entières.",
-    "category": "Réflexion",
-    "image": "games/chute-de-blocs/cover.svg",
-    "href": "games/chute-de-blocs/index.html"
-  },
-  {
-    "slug": "demineur",
-    "title": "Démineur",
-    "description": "Déjoue les 15 mines cachées sur la grille.",
-    "category": "Réflexion",
-    "image": "games/demineur/cover.svg",
-    "href": "games/demineur/index.html"
-  },
-  {
-    "slug": "flap",
-    "title": "Flap",
-    "description": "Bats des ailes pour te faufiler entre les obstacles.",
-    "category": "Réflexes",
-    "image": "games/flap/cover.svg",
-    "href": "games/flap/index.html"
-  },
-  {
-    "slug": "memoire",
-    "title": "Mémoire",
-    "description": "Retrouve les 8 paires en un minimum de coups.",
-    "category": "Réflexes",
-    "image": "games/memoire/cover.svg",
-    "href": "games/memoire/index.html"
-  },
-  {
-    "slug": "morpion",
-    "title": "Morpion",
-    "description": "Trois alignés, contre le CPU ou à deux joueurs.",
-    "category": "Réflexion",
-    "image": "games/morpion/cover.svg",
-    "href": "games/morpion/index.html"
-  },
-  {
-    "slug": "pong",
-    "title": "Pong",
-    "description": "Duel de raquettes contre le CPU, premier à 5 points.",
-    "category": "Classiques",
-    "image": "games/pong/cover.svg",
-    "href": "games/pong/index.html"
-  },
-  {
-    "slug": "sequence",
-    "title": "Séquence",
-    "description": "Mémorise et reproduis une séquence qui s'allonge.",
-    "category": "Réflexes",
-    "image": "games/sequence/cover.svg",
-    "href": "games/sequence/index.html"
-  },
-  {
-    "slug": "snake",
-    "title": "Snake",
-    "description": "Le classique du serpent affamé. Grandis sans te mordre.",
-    "category": "Classiques",
-    "image": "games/snake/cover.svg",
-    "href": "games/snake/index.html"
-  },
-  {
-    "slug": "subwaysurfer",
-    "title": "Subwaysurfer",
+    "slug": "chess",
+    "title": "Chess",
     "description": "",
     "category": null,
-    "image": "games/subwaysurfer/game.png",
-    "href": "games/subwaysurfer/index.html"
+    "image": null,
+    "href": "games/chess/index.html"
+  },
+  {
+    "slug": "chordomatic",
+    "title": "Chordomatic",
+    "description": "",
+    "category": null,
+    "image": null,
+    "href": "games/chordomatic/index.html"
+  },
+  {
+    "slug": "clumsy-bird",
+    "title": "Clumsy bird",
+    "description": "",
+    "category": null,
+    "image": null,
+    "href": "games/clumsy-bird/index.html"
+  },
+  {
+    "slug": "dead-valley",
+    "title": "Dead valley",
+    "description": "",
+    "category": null,
+    "image": null,
+    "href": "games/dead-valley/index.html"
+  },
+  {
+    "slug": "hextris-lite",
+    "title": "Hextris lite",
+    "description": "",
+    "category": null,
+    "image": null,
+    "href": "games/hextris-lite/index.html"
+  },
+  {
+    "slug": "life",
+    "title": "Life",
+    "description": "",
+    "category": null,
+    "image": "games/life/pattern.gif",
+    "href": "games/life/index.html"
+  },
+  {
+    "slug": "missile-game",
+    "title": "Missile game",
+    "description": "",
+    "category": null,
+    "image": null,
+    "href": "games/missile-game/index.html"
+  },
+  {
+    "slug": "pacman-lite",
+    "title": "Pacman lite",
+    "description": "",
+    "category": null,
+    "image": null,
+    "href": "games/pacman-lite/index.html"
+  },
+  {
+    "slug": "particle-clicker",
+    "title": "Particle clicker",
+    "description": "",
+    "category": null,
+    "image": null,
+    "href": "games/particle-clicker/index.html"
   }
 ]
