@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Séquence — AkashiGame</title>
+<link rel="stylesheet" href="../../assets/theme.css">
+<style>
+  #pad{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    grid-template-rows:1fr 1fr;
+    gap:10px;
+    width:260px;
+    height:260px;
+  }
+  .pad-btn{
+    border-radius:14px;
+    border:1px solid var(--border);
+    cursor:pointer;
+    opacity:0.55;
+    transition:opacity .1s ease;
+  }
+  .pad-btn.active{opacity:1;}
+  #p0{background:#3ea1e0;}
+  #p1{background:#2ecc71;}
+  #p2{background:#ff4d4d;}
+  #p3{background:#e0a72e;}
+</style>
+</head>
+<body>
+<header class="game-header">
+  <a href="../../index.html" class="back-link">&larr; AkashiGame</a>
+  <span class="game-title">Séquence</span>
+  <div class="game-status"><span>Niveau <b id="level">0</b></span><span>Record <b id="best">0</b></span></div>
+</header>
+
+<div class="game-wrap">
+  <div id="pad">
+    <div class="pad-btn" id="p0" data-i="0"></div>
+    <div class="pad-btn" id="p1" data-i="1"></div>
+    <div class="pad-btn" id="p2" data-i="2"></div>
+    <div class="pad-btn" id="p3" data-i="3"></div>
+  </div>
+  <p class="hint" id="hint">Regarde la séquence puis reproduis-la.</p>
+  <button class="btn primary" id="restart">Rejouer</button>
+</div>
+
+<div class="overlay" id="overlay">
+  <div class="overlay-box">
+    <h2>Perdu !</h2>
+    <p id="final">Niveau atteint : 0</p>
+    <button class="btn primary" id="overlay-restart">Rejouer</button>
+  </div>
+</div>
+
+<script>
+(function(){
+  var pads = [0,1,2,3].map(function(i){ return document.getElementById('p'+i); });
+  var levelEl = document.getElementById('level');
+  var bestEl = document.getElementById('best');
+  var hintEl = document.getElementById('hint');
+  var overlay = document.getElementById('overlay');
+  var finalEl = document.getElementById('final');
+  var best = Number(localStorage.getItem('akashi_simon_best') || 0);
+  bestEl.textContent = best;
+
+  var sequence, userStep, level, accepting;
+
+  function reset(){
+    sequence = [];
+    level = 0; userStep = 0; accepting = false;
+    levelEl.textContent = level;
+    overlay.classList.remove('show');
+    nextLevel();
+  }
+
+  function nextLevel(){
+    sequence.push(Math.floor(Math.random()*4));
+    level = sequence.length;
+    levelEl.textContent = level;
+    userStep = 0;
+    accepting = false;
+    hintEl.textContent = 'Regarde bien...';
+    playSequence();
+  }
+
+  function flash(i, cb){
+    pads[i].classList.add('active');
+    setTimeout(function(){
+      pads[i].classList.remove('active');
+      if(cb) setTimeout(cb, 150);
+    }, 350);
+  }
+
+  function playSequence(){
+    var i = 0;
+    function step(){
+      if(i >= sequence.length){
+        accepting = true;
+        hintEl.textContent = 'À toi de jouer.';
+        return;
+      }
+      flash(sequence[i], function(){ i++; step(); });
+    }
+    setTimeout(step, 400);
+  }
+
+  pads.forEach(function(pad, i){
+    pad.addEventListener('click', function(){
+      if(!accepting) return;
+      flash(i);
+      if(i === sequence[userStep]){
+        userStep++;
+        if(userStep === sequence.length){
+          accepting = false;
+          setTimeout(nextLevel, 600);
+        }
+      } else {
+        accepting = false;
+        var reached = level - 1;
+        if(reached > best){
+          best = reached;
+          localStorage.setItem('akashi_simon_best', best);
+          bestEl.textContent = best;
+        }
+        finalEl.textContent = 'Niveau atteint : ' + reached;
+        overlay.classList.add('show');
+      }
+    });
+  });
+
+  document.getElementById('restart').addEventListener('click', reset);
+  document.getElementById('overlay-restart').addEventListener('click', reset);
+
+  reset();
+})();
+</script>
+</body>
+</html>

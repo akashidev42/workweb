@@ -1,0 +1,82 @@
+[
+  {
+    "slug": "2048",
+    "title": "2048",
+    "description": "Fusionne les tuiles jusqu'à atteindre 2048.",
+    "category": "Réflexion",
+    "image": "games/2048/cover.svg",
+    "href": "games/2048/index.html"
+  },
+  {
+    "slug": "casse-briques",
+    "title": "Casse-briques",
+    "description": "Détruis toutes les briques sans laisser tomber la balle.",
+    "category": "Classiques",
+    "image": "games/casse-briques/cover.svg",
+    "href": "games/casse-briques/index.html"
+  },
+  {
+    "slug": "chute-de-blocs",
+    "title": "Chute de Blocs",
+    "description": "Empile les blocs et complète des lignes entières.",
+    "category": "Réflexion",
+    "image": "games/chute-de-blocs/cover.svg",
+    "href": "games/chute-de-blocs/index.html"
+  },
+  {
+    "slug": "demineur",
+    "title": "Démineur",
+    "description": "Déjoue les 15 mines cachées sur la grille.",
+    "category": "Réflexion",
+    "image": "games/demineur/cover.svg",
+    "href": "games/demineur/index.html"
+  },
+  {
+    "slug": "flap",
+    "title": "Flap",
+    "description": "Bats des ailes pour te faufiler entre les obstacles.",
+    "category": "Réflexes",
+    "image": "games/flap/cover.svg",
+    "href": "games/flap/index.html"
+  },
+  {
+    "slug": "memoire",
+    "title": "Mémoire",
+    "description": "Retrouve les 8 paires en un minimum de coups.",
+    "category": "Réflexes",
+    "image": "games/memoire/cover.svg",
+    "href": "games/memoire/index.html"
+  },
+  {
+    "slug": "morpion",
+    "title": "Morpion",
+    "description": "Trois alignés, contre le CPU ou à deux joueurs.",
+    "category": "Réflexion",
+    "image": "games/morpion/cover.svg",
+    "href": "games/morpion/index.html"
+  },
+  {
+    "slug": "pong",
+    "title": "Pong",
+    "description": "Duel de raquettes contre le CPU, premier à 5 points.",
+    "category": "Classiques",
+    "image": "games/pong/cover.svg",
+    "href": "games/pong/index.html"
+  },
+  {
+    "slug": "sequence",
+    "title": "Séquence",
+    "description": "Mémorise et reproduis une séquence qui s'allonge.",
+    "category": "Réflexes",
+    "image": "games/sequence/cover.svg",
+    "href": "games/sequence/index.html"
+  },
+  {
+    "slug": "snake",
+    "title": "Snake",
+    "description": "Le classique du serpent affamé. Grandis sans te mordre.",
+    "category": "Classiques",
+    "image": "games/snake/cover.svg",
+    "href": "games/snake/index.html"
+  }
+]

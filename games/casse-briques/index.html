@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Casse-briques — AkashiGame</title>
+<link rel="stylesheet" href="../../assets/theme.css">
+</head>
+<body>
+<header class="game-header">
+  <a href="../../index.html" class="back-link">&larr; AkashiGame</a>
+  <span class="game-title">Casse-briques</span>
+  <div class="game-status"><span>Score <b id="score">0</b></span><span>Vies <b id="lives">3</b></span></div>
+</header>
+
+<div class="game-wrap">
+  <canvas id="c" width="480" height="360" aria-label="Plateau de casse-briques"></canvas>
+  <p class="hint">Souris ou flèches gauche/droite pour bouger la raquette.</p>
+  <button class="btn primary" id="restart">Rejouer</button>
+</div>
+
+<div class="overlay" id="overlay">
+  <div class="overlay-box">
+    <h2 id="result">Terminé</h2>
+    <button class="btn primary" id="overlay-restart">Rejouer</button>
+  </div>
+</div>
+
+<script>
+(function(){
+  var canvas = document.getElementById('c');
+  var ctx = canvas.getContext('2d');
+  var W = canvas.width, H = canvas.height;
+  var scoreEl = document.getElementById('score');
+  var livesEl = document.getElementById('lives');
+  var overlay = document.getElementById('overlay');
+  var resultEl = document.getElementById('result');
+
+  var paddle, ball, bricks, score, lives, running, loopId;
+  var ROWS = 5, COLS = 8, BW = 50, BH = 16, GAP = 6, OFFSET_TOP = 40, OFFSET_LEFT = 15;
+  var colors = ['#ff4d4d','#e0a72e','#2ecc71','#3ea1e0','#c25ee0'];
+
+  function reset(){
+    paddle = {x: W/2-40, w:80, h:10};
+    ball = {x:W/2, y:H-40, vx:3, vy:-3, r:6};
+    score = 0; lives = 3;
+    running = true;
+    scoreEl.textContent = score;
+    livesEl.textContent = lives;
+    overlay.classList.remove('show');
+    bricks = [];
+    for(var r=0;r<ROWS;r++){
+      for(var c=0;c<COLS;c++){
+        bricks.push({x: OFFSET_LEFT + c*(BW+GAP), y: OFFSET_TOP + r*(BH+GAP), alive:true, color: colors[r % colors.length]});
+      }
+    }
+    if(loopId) cancelAnimationFrame(loopId);
+    loop();
+  }
+
+  canvas.addEventListener('mousemove', function(e){
+    var rect = canvas.getBoundingClientRect();
+    var x = (e.clientX - rect.left) * (W/rect.width);
+    paddle.x = Math.max(0, Math.min(W-paddle.w, x - paddle.w/2));
+  });
+
+  var keys = {};
+  document.addEventListener('keydown', function(e){ keys[e.key]=true; });
+  document.addEventListener('keyup', function(e){ keys[e.key]=false; });
+
+  function loop(){
+    if(!running) return;
+    if(keys['ArrowLeft']) paddle.x -= 6;
+    if(keys['ArrowRight']) paddle.x += 6;
+    paddle.x = Math.max(0, Math.min(W-paddle.w, paddle.x));
+
+    ball.x += ball.vx;
+    ball.y += ball.vy;
+
+    if(ball.x < ball.r || ball.x > W-ball.r) ball.vx *= -1;
+    if(ball.y < ball.r) ball.vy *= -1;
+
+    if(ball.y > H - 20 - ball.r && ball.x > paddle.x && ball.x < paddle.x+paddle.w && ball.vy > 0){
+      ball.vy *= -1;
+      var hit = (ball.x - (paddle.x+paddle.w/2)) / (paddle.w/2);
+      ball.vx = hit * 4;
+    }
+
+    if(ball.y > H){
+      lives--;
+      livesEl.textContent = lives;
+      if(lives <= 0){
+        running = false;
+        resultEl.textContent = 'Perdu ! Score : ' + score;
+        overlay.classList.add('show');
+      } else {
+        ball = {x:W/2, y:H-40, vx:3, vy:-3, r:6};
+      }
+    }
+
+    bricks.forEach(function(b){
+      if(!b.alive) return;
+      if(ball.x > b.x && ball.x < b.x+BW && ball.y > b.y && ball.y < b.y+BH){
+        b.alive = false;
+        ball.vy *= -1;
+        score += 10;
+        scoreEl.textContent = score;
+      }
+    });
+
+    if(bricks.every(function(b){return !b.alive;})){
+      running = false;
+      resultEl.textContent = 'Gagné ! Score : ' + score;
+      overlay.classList.add('show');
+    }
+
+    draw();
+    loopId = requestAnimationFrame(loop);
+  }
+
+  function draw(){
+    ctx.fillStyle = '#0e0e11';
+    ctx.fillRect(0,0,W,H);
+
+    bricks.forEach(function(b){
+      if(!b.alive) return;
+      ctx.fillStyle = b.color;
+      ctx.fillRect(b.x, b.y, BW, BH);
+    });
+
+    ctx.fillStyle = '#eceaf0';
+    ctx.fillRect(paddle.x, H-20, paddle.w, paddle.h);
+
+    ctx.fillStyle = '#ff4d4d';
+    ctx.beginPath(); ctx.arc(ball.x, ball.y, ball.r, 0, Math.PI*2); ctx.fill();
+  }
+
+  document.getElementById('restart').addEventListener('click', reset);
+  document.getElementById('overlay-restart').addEventListener('click', reset);
+
+  reset();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AkashiGame — Ta salle de jeu</title>
+<meta name="description" content="AkashiGame — mini-jeux jouables, sans pub, sans tracker, rangés par catégories.">
+<link rel="stylesheet" href="assets/theme.css">
+<style>
+  header.top{position:sticky;top:0;z-index:40;background:rgba(5,5,6,0.88);backdrop-filter:blur(10px);border-bottom:1px solid var(--border);}
+  .top-inner{display:flex;align-items:center;justify-content:space-between;padding:16px 24px;gap:20px;max-width:1180px;margin:0 auto;}
+  .logo{display:flex;align-items:center;gap:10px;font-weight:700;font-size:1.15rem;letter-spacing:-0.01em;}
+  .logo-mark{width:28px;height:28px;border-radius:7px;background:linear-gradient(135deg,var(--accent),#7a2020);display:flex;align-items:center;justify-content:center;font-size:0.85rem;font-weight:800;color:#0a0a0a;flex-shrink:0;}
+  .stat-pill{font-family:var(--mono);font-size:0.78rem;color:var(--text-dim);}
+
+  .hero{padding:56px 24px 36px;border-bottom:1px solid var(--border);}
+  .hero-inner{max-width:1180px;margin:0 auto;}
+  .hero h1{font-size:clamp(2.1rem,5vw,3.2rem);line-height:1.08;letter-spacing:-0.02em;font-weight:700;max-width:16ch;}
+  .hero p{margin-top:16px;color:var(--text-dim);font-size:1.02rem;max-width:52ch;}
+
+  .filters{position:sticky;top:65px;z-index:30;background:var(--bg);border-bottom:1px solid var(--border);padding:14px 0;}
+  .filters-scroll{display:flex;gap:8px;overflow-x:auto;padding:0 24px;max-width:1180px;margin:0 auto;scrollbar-width:none;}
+  .filters-scroll::-webkit-scrollbar{display:none;}
+  .filter-btn{flex-shrink:0;padding:7px 14px;border-radius:999px;border:1px solid var(--border);background:var(--surface);color:var(--text-dim);font-size:0.85rem;font-family:var(--sans);cursor:pointer;}
+  .filter-btn:hover{color:var(--text);}
+  .filter-btn.active{background:var(--accent);border-color:var(--accent);color:#0a0a0a;font-weight:600;}
+
+  main{padding:36px 24px 20px;}
+  .games-grid{max-width:1180px;margin:0 auto;display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px;}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;display:flex;flex-direction:column;transition:border-color .15s ease, transform .15s ease;}
+  .card:hover{border-color:#38383f;transform:translateY(-2px);}
+  .card-cover{width:100%;aspect-ratio:5/3;object-fit:cover;background:var(--surface-2);display:block;}
+  .card-cover-fallback{width:100%;aspect-ratio:5/3;display:flex;align-items:center;justify-content:center;font-size:2rem;font-weight:800;color:#0a0a0a;}
+  .card-body{padding:16px;display:flex;flex-direction:column;gap:8px;flex:1;}
+  .card-title{font-weight:600;font-size:1.02rem;}
+  .card-cat{font-family:var(--mono);font-size:0.72rem;color:var(--text-dim);}
+  .card-desc{color:var(--text-dim);font-size:0.85rem;flex:1;}
+  .card-btn{align-self:flex-start;font-size:0.8rem;font-weight:600;padding:7px 14px;border-radius:7px;border:1px solid var(--border);color:var(--text);}
+  .card:hover .card-btn{border-color:var(--accent);color:var(--accent);}
+  .empty-state{max-width:1180px;margin:60px auto;text-align:center;color:var(--text-dim);font-family:var(--mono);font-size:0.9rem;}
+
+  footer{border-top:1px solid var(--border);margin-top:64px;padding:32px 24px 40px;}
+  .footer-inner{max-width:1180px;margin:0 auto;display:flex;flex-wrap:wrap;justify-content:space-between;gap:20px;color:var(--text-dim);font-size:0.85rem;}
+  .footer-inner b{color:var(--text);}
+  .footer-tags{display:flex;gap:16px;font-family:var(--mono);font-size:0.78rem;}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="top-inner">
+    <a href="#top" class="logo"><span class="logo-mark">明</span>AkashiGame</a>
+    <span class="stat-pill" id="count-pill">— jeux · 0 pub · 0 tracker</span>
+  </div>
+</header>
+
+<section class="hero" id="top">
+  <div class="hero-inner">
+    <h1>Dépose un dossier, joue direct.</h1>
+    <p>Cette page se construit toute seule à partir du dossier <code>/games</code> : le nom du dossier devient le titre, une image dedans devient la vignette, et l'<code>index.html</code> qu'il contient devient le jeu.</p>
+  </div>
+</section>
+
+<nav class="filters" aria-label="Filtrer par catégorie" id="filters" style="display:none;">
+  <div class="filters-scroll" id="filter-bar"></div>
+</nav>
+
+<main>
+  <div class="games-grid" id="games-grid"></div>
+  <p class="empty-state" id="empty-state" style="display:none;"></p>
+</main>
+
+<footer>
+  <div class="footer-inner">
+    <div><b>AkashiGame</b> — pack de mini-jeux open source, à héberger sur GitHub Pages.</div>
+    <div class="footer-tags"><span>Sans pub</span><span>Sans compte</span><span>Sans tracker</span></div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  var grid = document.getElementById("games-grid");
+  var emptyState = document.getElementById("empty-state");
+  var filtersNav = document.getElementById("filters");
+  var filterBar = document.getElementById("filter-bar");
+  var countPill = document.getElementById("count-pill");
+
+  var PALETTE = ["#ff4d4d","#3ea1e0","#2ecc71","#e0a72e","#c25ee0","#5ee0c8"];
+  var state = { cat: "all", games: [], catColors: {} };
+
+  fetch("games.json")
+    .then(function(r){
+      if(!r.ok) throw new Error("games.json introuvable");
+      return r.json();
+    })
+    .then(function(games){
+      state.games = games;
+      buildCatColors(games);
+      buildFilters(games);
+      render();
+    })
+    .catch(function(err){
+      grid.innerHTML = "";
+      emptyState.style.display = "block";
+      emptyState.textContent = "Impossible de charger games.json (" + err.message + "). Génère-le avec : node tools/build-manifest.js — et sers le site via un serveur local (fetch() ne fonctionne pas en ouvrant le fichier directement).";
+    });
+
+  function buildCatColors(games){
+    var cats = [];
+    games.forEach(function(g){
+      if(g.category && cats.indexOf(g.category) === -1) cats.push(g.category);
+    });
+    cats.forEach(function(c, i){ state.catColors[c] = PALETTE[i % PALETTE.length]; });
+  }
+
+  function buildFilters(games){
+    var cats = [];
+    games.forEach(function(g){
+      if(g.category && cats.indexOf(g.category) === -1) cats.push(g.category);
+    });
+    if(cats.length === 0){ filtersNav.style.display = "none"; return; }
+    filtersNav.style.display = "block";
+    filterBar.innerHTML = "";
+    filterBar.appendChild(makeFilterBtn("all", "Tous"));
+    cats.forEach(function(c){ filterBar.appendChild(makeFilterBtn(c, c)); });
+  }
+
+  function makeFilterBtn(id, label){
+    var btn = document.createElement("button");
+    btn.className = "filter-btn" + (id === "all" ? " active" : "");
+    btn.textContent = label;
+    btn.dataset.cat = id;
+    btn.addEventListener("click", function(){
+      state.cat = id;
+      Array.prototype.forEach.call(filterBar.children, function(b){
+        b.classList.toggle("active", b.dataset.cat === id);
+      });
+      render();
+    });
+    return btn;
+  }
+
+  function render(){
+    var list = state.games.filter(function(g){
+      return state.cat === "all" || g.category === state.cat;
+    });
+
+    countPill.textContent = state.games.length + " jeu" + (state.games.length>1?"x":"") + " · 0 pub · 0 tracker";
+
+    grid.innerHTML = "";
+    emptyState.style.display = list.length === 0 ? "block" : "none";
+    if(list.length === 0) emptyState.textContent = "Aucun jeu dans cette catégorie.";
+
+    list.forEach(function(g){ grid.appendChild(makeCard(g)); });
+  }
+
+  function makeCard(g){
+    var a = document.createElement("a");
+    a.href = g.href;
+    a.className = "card";
+
+    if(g.image){
+      var img = document.createElement("img");
+      img.className = "card-cover";
+      img.src = g.image;
+      img.alt = g.title;
+      img.loading = "lazy";
+      img.onerror = function(){ img.replaceWith(makeFallbackCover(g)); };
+      a.appendChild(img);
+    } else {
+      a.appendChild(makeFallbackCover(g));
+    }
+
+    var body = document.createElement("div");
+    body.className = "card-body";
+
+    var title = document.createElement("div");
+    title.className = "card-title";
+    title.textContent = g.title;
+    body.appendChild(title);
+
+    if(g.category){
+      var catLabel = document.createElement("div");
+      catLabel.className = "card-cat";
+      catLabel.style.color = state.catColors[g.category] || "var(--accent)";
+      catLabel.textContent = g.category;
+      body.appendChild(catLabel);
+    }
+
+    if(g.description){
+      var desc = document.createElement("div");
+      desc.className = "card-desc";
+      desc.textContent = g.description;
+      body.appendChild(desc);
+    }
+
+    var btn = document.createElement("span");
+    btn.className = "card-btn";
+    btn.textContent = "Jouer →";
+    body.appendChild(btn);
+
+    a.appendChild(body);
+    return a;
+  }
+
+  function makeFallbackCover(g){
+    var d = document.createElement("div");
+    d.className = "card-cover-fallback";
+    d.style.background = (state.catColors[g.category] || "#ff4d4d") + "33";
+    d.textContent = (g.title || "?").charAt(0).toUpperCase();
+    return d;
+  }
+
+  // ---------- maintenance console command ----------
+  // Dans la console (F12) : temp("on") ou temp("off")
+  var root = document.documentElement;
+  var KEY = "akashi_maintenance";
+
+  function applyState(on){
+    root.classList.toggle("maintenance-mode", on);
+    localStorage.setItem(KEY, on ? "on" : "off");
+    console.log(on
+      ? "%c⚠ AkashiGame — maintenance activée" : "%c✓ AkashiGame — site relancé",
+      "background:" + (on ? "#ff4d4d" : "#2ecc71") + ";color:#050506;padding:4px 10px;border-radius:4px;font-weight:bold;"
+    );
+  }
+
+  window.temp = function(action){
+    if(action === undefined){
+      var current = root.classList.contains("maintenance-mode") ? "on" : "off";
+      console.log('État actuel : ' + current + '. Utilise temp("on") ou temp("off").');
+      return current;
+    }
+    var a = String(action).toLowerCase();
+    if(a !== "on" && a !== "off"){
+      console.log('Utilisation : temp("on") ou temp("off")');
+      return;
+    }
+    applyState(a === "on");
+  };
+  if(document.body) document.body.temp = window.temp;
+
+  var saved = localStorage.getItem(KEY);
+  if(saved === "on") applyState(true);
+})();
+</script>
+
+<div id="maintenance-overlay" style="display:none;position:fixed;inset:0;z-index:999;background:#050506;align-items:center;justify-content:center;padding:24px;">
+  <div style="max-width:420px;text-align:center;">
+    <div style="width:56px;height:56px;margin:0 auto 20px;border-radius:14px;background:#3a1414;border:1px solid #ff4d4d;display:flex;align-items:center;justify-content:center;">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ff4d4d" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg>
+    </div>
+    <h2 style="font-size:1.4rem;margin-bottom:10px;">Maintenance en cours</h2>
+    <p style="color:#8b8891;font-size:0.92rem;">AkashiGame revient très vite.</p>
+  </div>
+</div>
+<style>
+  html.maintenance-mode #maintenance-overlay{display:flex !important;}
+  html.maintenance-mode header.top, html.maintenance-mode .hero, html.maintenance-mode .filters, html.maintenance-mode main, html.maintenance-mode footer{display:none;}
+</style>
+</body>
+</html>

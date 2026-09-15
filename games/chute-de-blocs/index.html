@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chute de Blocs — AkashiGame</title>
+<link rel="stylesheet" href="../../assets/theme.css">
+</head>
+<body>
+<header class="game-header">
+  <a href="../../index.html" class="back-link">&larr; AkashiGame</a>
+  <span class="game-title">Chute de Blocs</span>
+  <div class="game-status"><span>Score <b id="score">0</b></span><span>Lignes <b id="lines">0</b></span></div>
+</header>
+
+<div class="game-wrap">
+  <canvas id="c" width="240" height="440" aria-label="Plateau de chute de blocs"></canvas>
+  <p class="hint">Flèches gauche/droite pour déplacer, haut pour tourner, bas pour accélérer, espace pour laisser tomber.</p>
+  <button class="btn primary" id="restart">Rejouer</button>
+</div>
+
+<div class="overlay" id="overlay">
+  <div class="overlay-box">
+    <h2 id="result">Terminé</h2>
+    <button class="btn primary" id="overlay-restart">Rejouer</button>
+  </div>
+</div>
+
+<script>
+(function(){
+  var canvas = document.getElementById('c');
+  var ctx = canvas.getContext('2d');
+  var COLS = 10, ROWS = 20, SIZE = 22;
+  var scoreEl = document.getElementById('score');
+  var linesEl = document.getElementById('lines');
+  var overlay = document.getElementById('overlay');
+  var resultEl = document.getElementById('result');
+
+  var SHAPES = {
+    I:[[1,1,1,1]],
+    O:[[1,1],[1,1]],
+    T:[[0,1,0],[1,1,1]],
+    S:[[0,1,1],[1,1,0]],
+    Z:[[1,1,0],[0,1,1]],
+    J:[[1,0,0],[1,1,1]],
+    L:[[0,0,1],[1,1,1]]
+  };
+  var COLORS = {I:'#3ea1e0', O:'#e0a72e', T:'#c25ee0', S:'#2ecc71', Z:'#ff4d4d', J:'#5e6fe0', L:'#e0784a'};
+  var KEYS_ORDER = Object.keys(SHAPES);
+
+  var board, piece, score, lines, running, dropTimer, loopId;
+
+  function reset(){
+    board = [];
+    for(var r=0;r<ROWS;r++) board.push(new Array(COLS).fill(null));
+    score = 0; lines = 0; running = true;
+    scoreEl.textContent = score;
+    linesEl.textContent = lines;
+    overlay.classList.remove('show');
+    dropTimer = 0;
+    spawn();
+    if(loopId) cancelAnimationFrame(loopId);
+    lastTime = performance.now();
+    loop(lastTime);
+  }
+
+  function spawn(){
+    var key = KEYS_ORDER[Math.floor(Math.random()*KEYS_ORDER.length)];
+    piece = { shape: SHAPES[key].map(function(row){return row.slice();}), color: COLORS[key], x: Math.floor(COLS/2)-1, y: 0 };
+    if(collide(piece.shape, piece.x, piece.y)){
+      running = false;
+      resultEl.textContent = 'Terminé ! Score : ' + score;
+      overlay.classList.add('show');
+    }
+  }
+
+  function collide(shape, ox, oy){
+    for(var r=0;r<shape.length;r++){
+      for(var c=0;c<shape[r].length;c++){
+        if(!shape[r][c]) continue;
+        var x = ox+c, y = oy+r;
+        if(x<0 || x>=COLS || y>=ROWS) return true;
+        if(y>=0 && board[y][x]) return true;
+      }
+    }
+    return false;
+  }
+
+  function merge(){
+    piece.shape.forEach(function(row, r){
+      row.forEach(function(v, c){
+        if(v){
+          var x = piece.x+c, y = piece.y+r;
+          if(y>=0) board[y][x] = piece.color;
+        }
+      });
+    });
+  }
+
+  function clearLines(){
+    var cleared = 0;
+    for(var r=ROWS-1;r>=0;r--){
+      if(board[r].every(function(v){return v;})){
+        board.splice(r,1);
+        board.unshift(new Array(COLS).fill(null));
+        cleared++;
+        r++;
+      }
+    }
+    if(cleared){
+      lines += cleared;
+      score += [0,100,300,500,800][cleared] || cleared*200;
+      scoreEl.textContent = score;
+      linesEl.textContent = lines;
+    }
+  }
+
+  function rotate(shape){
+    var rows = shape.length, cols = shape[0].length;
+    var res = [];
+    for(var c=0;c<cols;c++){
+      var row = [];
+      for(var r=rows-1;r>=0;r--) row.push(shape[r][c]);
+      res.push(row);
+    }
+    return res;
+  }
+
+  function hardDrop(){
+    while(!collide(piece.shape, piece.x, piece.y+1)) piece.y++;
+    lock();
+  }
+
+  function lock(){
+    merge();
+    clearLines();
+    spawn();
+  }
+
+  document.addEventListener('keydown', function(e){
+    if(!running) return;
+    if(e.key === 'ArrowLeft' && !collide(piece.shape, piece.x-1, piece.y)) piece.x--;
+    else if(e.key === 'ArrowRight' && !collide(piece.shape, piece.x+1, piece.y)) piece.x++;
+    else if(e.key === 'ArrowDown'){ if(!collide(piece.shape, piece.x, piece.y+1)) piece.y++; }
+    else if(e.key === 'ArrowUp'){
+      var r = rotate(piece.shape);
+      if(!collide(r, piece.x, piece.y)) piece.shape = r;
+    } else if(e.key === ' '){
+      hardDrop();
+      e.preventDefault();
+    } else return;
+    draw();
+  });
+
+  var lastTime = 0, acc = 0;
+  function loop(time){
+    if(!running) return;
+    var dt = time - lastTime;
+    lastTime = time;
+    acc += dt;
+    if(acc > 550){
+      acc = 0;
+      if(!collide(piece.shape, piece.x, piece.y+1)) piece.y++;
+      else lock();
+    }
+    draw();
+    loopId = requestAnimationFrame(loop);
+  }
+
+  function draw(){
+    ctx.fillStyle = '#0e0e11';
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+
+    for(var r=0;r<ROWS;r++){
+      for(var c=0;c<COLS;c++){
+        if(board[r][c]){
+          ctx.fillStyle = board[r][c];
+          ctx.fillRect(c*SIZE+1, r*SIZE+1, SIZE-2, SIZE-2);
+        }
+      }
+    }
+
+    ctx.fillStyle = piece.color;
+    piece.shape.forEach(function(row, r){
+      row.forEach(function(v, c){
+        if(v) ctx.fillRect((piece.x+c)*SIZE+1, (piece.y+r)*SIZE+1, SIZE-2, SIZE-2);
+      });
+    });
+  }
+
+  document.getElementById('restart').addEventListener('click', reset);
+  document.getElementById('overlay-restart').addEventListener('click', reset);
+
+  reset();
+})();
+</script>
+</body>
+</html>
